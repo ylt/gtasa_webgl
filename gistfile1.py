@@ -8,7 +8,6 @@ bl_info = {
     "category": "Import-Export" }
 
 import struct
-import os
 import zlib
 import base64
 
@@ -673,29 +672,3 @@ class ImportRenderware:
             geometry.nightVertCol.append((vcr / 255, vcg / 255, vcb / 255))
         
         return header, None
-    
-"""class ImportRenderwareMenu(bpy.types.Operator):
-    bl_idname = "import_rw.dff"
-    bl_label = "Import Renderware (.dff)"
-    
-    filename_ext = ".dff"
-    
-    filepath = StringProperty(subtype = "FILE_PATH")
-    
-    def invoke(self, context, event):
-        wm = context.window_manager
-        
-        wm.fileselect_add(self)
-        
-        return {"RUNNING_MODAL"}
-    
-    def execute(self, context):
-        setupProps()
-    
-        ImportRenderware(self.filepath)
-        
-        return {"FINISHED"}
-
-def import_func(self, context):
-    self.layout.operator(ImportRenderwareMenu.bl_idname, text="Renderware (.dff)")
-"""
