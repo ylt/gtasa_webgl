@@ -1,12 +1,3 @@
-bl_info = {
-    "name": "RenderWare importer/exporter for GTA III/VC/SA (.dff)",
-    "author": "Ago Allikmaa (maxorator)",
-    "version": (0, 9, 2),
-    "blender": (2, 6, 3),
-    "location": "File > Import-Export > Renderware (.dff) ",
-    "description": "RenderWare importer/exporter for GTA III/VC/SA",
-    "category": "Import-Export" }
-
 import struct
 import zlib
 import base64
