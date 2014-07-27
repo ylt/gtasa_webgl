@@ -1,8 +1,7 @@
-import parse
 import uuid
 import json
 import os
-
+import parse
 
 class convert():
     @staticmethod
@@ -39,6 +38,11 @@ class convert():
     def convert_rgb(self, r,g,b):
         return (int(b) << 16) + (int(g) << 8) + int(r),
     
+    def build_texture(self, texture):
+        {
+            "url":"url"
+        }
+    
     def build_material(self, uuid, mat, geometry):
         self.data["materials"][0]["materials"].append({
             "uuid":uuid,
@@ -69,23 +73,23 @@ class convert():
         
         
         mats = []
-        for mat in geometry.materials:
+        """for mat in geometry.materials:
             m_uuid = str(uuid.uuid4())
             m_id = self.build_material(m_uuid, mat, geometry)
-            mats.append(m_id)
+            mats.append(m_id)"""
             
         vertices = geo["data"]["vertices"]
         normals = geo["data"]["normals"]
         faces = geo["data"]["faces"]
         
         for vertex in geometry.vertices:
-            vertices.extend(vertex.desc())
-            normals.extend(vertex.normal)
+            vertices.extend(vertex.desc() or [])
+            normals.extend(vertex.normal or [])
             
         for triangle in geometry.triangles:
-            faces.append(2)
+            faces.append(0)
             faces.extend(triangle.desc())
-            faces.append(mats[triangle.mat])
+            #faces.append(mats[triangle.mat])
             
     def build_frame(self, frame, parent):
         
@@ -119,20 +123,75 @@ class convert():
             ob["children"] = []
             for c_frame in frame.loader.childrenOf[frame.index+1]:
                 self.build_frame(frame.loader.frames[c_frame], ob["children"])
-    
-conv = convert("/home/joe/win8vm-files/gta3/coach.dff")
+
+"""
+conv = convert("/home/joe/win8vm-files/gta3/lodasnroad17b.dff")
 data = conv.data
 f = open("output.js", "w")
 json.dump(data, f, sort_keys=False)
 f.close()
-    
+"""
+ 
 #import timeit
+#count = 0
 #directory = "/home/joe/win8vm-files/gta3/"
 #for file in os.listdir(directory):
 #    if '.dff' in file:
-#        #try:
-#            #data = convert.convert(directory+file)
-#            #print(data["object"]["children"][0]["name"])
-#            print(timeit.timeit("convert.convert(\""+directory+file+")\""))
-#        #except:
-#        #    pass
+#        try:
+#            data = convert.convert(directory+file)
+#            print(data["object"]["children"][0]["name"])
+#            #print(timeit.timeit("convert.convert(\""+directory+file+")\""))
+#            count += 1
+#        except:
+#            pass
+#        
+#        if count > 10:
+#            break
+inst = []
+directory = "/home/joe/win8vm-files/gta3/"
+is_inst = False
+f = open("/home/joe/win8vm-files/maps/vegas/vegasW.ipl")
+for line in f:
+    line = line.rstrip()
+    if line == "inst":
+        is_inst = True
+        continue
+    elif line == "end":
+        is_inst = False
+    if is_inst == False:
+        continue
+    
+    ID, ModelName, Interior, PosX, PosY, PosZ, RotX, RotY, RotZ, RotW, LOD = [item.strip() for item in line.split(",")]
+    
+    inst.append({
+        "ID":int(ID),
+        "ModelName":ModelName,
+        "PosY":float(PosY),
+        "PosZ":float(PosZ),
+        "RotX":float(PosX),
+        "RotY":float(RotY),
+        "RotZ":float(RotZ),
+        "RotW":float(RotW),
+        "LOD":int(LOD),
+    })
+    
+    print(ModelName)
+    
+    #data = convert.convert(directory+ModelName.lower()+".dff")
+    try:
+        #print(directory+ModelName.lower()+".dff")            
+        
+        data = convert.convert(directory+ModelName.lower()+".dff")
+        
+        f = open("models/"+ModelName+".js", "w")
+        json.dump(data, f)
+        f.close()        
+        
+        #print(ModelName)
+        pass
+    except:
+        print("FAIL: "+ModelName)
+        
+f = open("IPL.js", "w")
+json.dump(inst, f)
+f.close()

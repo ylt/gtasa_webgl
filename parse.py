@@ -236,11 +236,17 @@ class ImportRenderware:
         return struct.unpack(format, slice[:size]), slice[size:]
         
     def readSection(self, type, extra = None):
+        while True:
+            rettype,res = self.readASection(extra)
+            if type < 0 or rettype == type:
+                return res
+        
+    def readASection(self, extra = None):
         header = self.readFormat("III")
         header = (header[0], header[1], RwTypes.decodeVersion(header[2]))
         
-        if type >= 0 and header[0] != type:
-            raise Exception("Expected type " + str(type) + ", found " + str(header[0]))
+        #if type >= 0 and header[0] != type:
+        #    raise Exception("Expected type " + str(type) + ", found " + str(header[0]))
             
         curPos = self.f.tell()
         
@@ -269,12 +275,12 @@ class ImportRenderware:
         elif header[0] == RwTypes.HANIMPLG: res = self.readSectionHAnimPLG(header, extra)
         elif header[0] == RwTypes.SKINPLG: res = self.readSectionSkinPLG(header, extra)
         elif header[0] == RwTypes.NIGHTCOLS: res = self.readSectionNightCols(header, extra)
-        elif type >= 0: raise Exception("Missing read function for section type " + str(type))
+        #elif type >= 0: raise Exception("Missing read function for section type " + str(type))
         else: print("Ignoring extension data of type " + hex(header[0]))
         
         self.f.seek(curPos + header[1])
         
-        return res
+        return header[0], res
         
     def readSectionStruct(self, header):
         return header, self.f.read(header[1])
