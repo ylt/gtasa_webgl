@@ -10,7 +10,7 @@ class convert():
         return convert(filename).data
         
     # data
-    def __init__(self, filename):
+    def __init__(self, filename, randCols=False):
         self.data = {
             "metadata": {
                 "version": 4.3,
@@ -21,7 +21,7 @@ class convert():
             ],
             "materials":[{"type": "MeshFaceMaterial", "materials":[]}],
         }
-        
+        self.randCols = randCols
         self.objects = []
         
         rw = parse.ImportRenderware(filename)
@@ -50,7 +50,8 @@ class convert():
         }
     
     def build_material(self, uuid, mat, geometry):
-        mat.col = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
+        if self.randCols:
+            mat.col = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
         self.data["materials"][0]["materials"].append({
             "uuid":uuid,
             "type":"MeshPhongMaterial",
