@@ -2,6 +2,7 @@ import uuid
 import json
 import os
 import parse
+import random
 
 class convert():
     @staticmethod
@@ -21,7 +22,7 @@ class convert():
             "materials":[{"type": "MeshFaceMaterial", "materials":[]}],
             "object": {
                 "uuid": "E8FB0FEE-2F25-4512-9EC8-72B2B44C1D46",
-                "type": "Scene",
+                "type": "Object3D",
                 "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
                 "children":[]
             }
@@ -44,6 +45,7 @@ class convert():
         }
     
     def build_material(self, uuid, mat, geometry):
+        mat.col = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
         self.data["materials"][0]["materials"].append({
             "uuid":uuid,
             "type":"MeshPhongMaterial",
@@ -73,10 +75,10 @@ class convert():
         
         
         mats = []
-        """for mat in geometry.materials:
+        for mat in geometry.materials:
             m_uuid = str(uuid.uuid4())
             m_id = self.build_material(m_uuid, mat, geometry)
-            mats.append(m_id)"""
+            mats.append(m_id)
             
         vertices = geo["data"]["vertices"]
         normals = geo["data"]["normals"]
@@ -87,9 +89,9 @@ class convert():
             normals.extend(vertex.normal or [])
             
         for triangle in geometry.triangles:
-            faces.append(0)
+            faces.append(2)
             faces.extend(triangle.desc())
-            #faces.append(mats[triangle.mat])
+            faces.append(mats[triangle.mat])
             
     def build_frame(self, frame, parent):
         
@@ -166,6 +168,7 @@ for line in f:
     inst.append({
         "ID":int(ID),
         "ModelName":ModelName,
+        "PosX":float(PosX),
         "PosY":float(PosY),
         "PosZ":float(PosZ),
         "RotX":float(PosX),
@@ -185,7 +188,7 @@ for line in f:
         
         f = open("models/"+ModelName+".js", "w")
         json.dump(data, f)
-        f.close()        
+        f.close()
         
         #print(ModelName)
         pass
