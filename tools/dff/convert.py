@@ -20,22 +20,26 @@ class convert():
             "geometries": [
             ],
             "materials":[{"type": "MeshFaceMaterial", "materials":[]}],
-            "object": {
-                "uuid": "E8FB0FEE-2F25-4512-9EC8-72B2B44C1D46",
-                "type": "Object3D",
-                "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
-                "children":[]
-            }
         }
         
-                
+        self.objects = []
         
         rw = parse.ImportRenderware(filename)
         
         for frame in rw.childrenOf[0]:
-            self.build_frame(rw.frames[frame], self.data["object"]["children"])
+            self.build_frame(rw.frames[frame], self.objects)
             
-    
+            
+        if len(self.objects) > 1:
+            self.data["object"] =  {
+                "uuid": "E8FB0FEE-2F25-4512-9EC8-72B2B44C1D46",
+                "type": "Object3D",
+                "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+                "children":[self.objects]
+            }
+        else:
+            self.data["object"] = self.objects[0]
+            
     def convert_rgb(self, r,g,b):
         return (int(b) << 16) + (int(g) << 8) + int(r),
     
