@@ -32,10 +32,11 @@ class convert():
             
         if len(self.objects) > 1:
             self.data["object"] =  {
-                "uuid": "E8FB0FEE-2F25-4512-9EC8-72B2B44C1D46",
+                "uuid": str(uuid.uuid4()),
                 "type": "Object3D",
                 "matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
-                "children":[self.objects]
+                "children":[self.objects],
+                "name":os.path.basename(filename)
             }
         else:
             self.data["object"] = self.objects[0]
