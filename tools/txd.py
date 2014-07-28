@@ -45,7 +45,7 @@ class file(section):
         self.readAll()
         
     def readStruct(self):
-        print(self.read_struct("HH"))
+        self.texture_count, self.unknown = self.read_struct("HH")
         
 class texture_native(section):
     def __init__(self, f, end):
@@ -56,6 +56,22 @@ class texture_native(section):
         self.readAll()
 
     def readStruct(self):
-        data = self.read_struct("<IHBB32s32sIIHHBBBBI")
-        texture = self.f.read(data[14])
+        self.version, \
+        self.filter_flags, \
+        self.texture_wrap_v, \
+        self.texture_wrap_u, \
+        self.texture_name, \
+        self.alpha_name, \
+        self.alpha_flags, \
+        self.direct3d_texture_format, \
+        self.width,\
+        self.height,\
+        self.depth, \
+        self.mipmap_count, \
+        self.texcode_type, \
+        self.flags, \
+        self.data_size \
+                = self.read_struct("<IHBB32s32sIIHHBBBBI")
+        
+        self.texture = self.f.read(self.data_size)
 file("../fronten1.txd")
