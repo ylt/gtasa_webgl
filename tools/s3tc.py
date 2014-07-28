@@ -39,14 +39,6 @@ http://oss.sgi.com/projects/ogl-sample/registry/EXT/texture_compression_s3tc.txt
 '''
 
 import ctypes
-import re
-
-"""from pyglet.gl import *
-from pyglet.gl import gl_info
-from pyglet.image import AbstractImage, Texture"""
-
-split_8byte = re.compile('.' * 8, flags=re.DOTALL)
-split_16byte = re.compile('.' * 16, flags=re.DOTALL)
 
 def chunks(l, n):
     """ Yield successive n-sized chunks from l.
@@ -54,70 +46,16 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
-GL_UNSIGNED_BYTE = 1
-GL_UNSIGNED_SHORT_5_6_5 = 2
-GL_RGB = 3
-GL_RGBA = 4
-
-class PackedImageData():
-    _current_texture = None
-
-    def __init__(self, width, height, format, packed_format, data):
-        super(PackedImageData, self).__init__(width, height)
-        self.format = format
-        self.packed_format = packed_format
-        self.data = data
-
-    def unpack(self):
-        if self.packed_format == GL_UNSIGNED_SHORT_5_6_5:
-            # Unpack to GL_RGB.  Assume self.data is already 16-bit
-            i = 0
-            out = (ctypes.c_ubyte * (self.width * self.height * 3))()
-            for c in self.data:
-                out[i+2] = (c & 0x1f) << 3
-                out[i+1] = (c & 0x7e0) >> 3
-                out[i] = (c & 0xf800) >> 8
-                i += 3
-            self.data = out
-            self.packed_format = GL_UNSIGNED_BYTE
-
-    def _get_texture(self):
-        if self._current_texture:
-            return self._current_texture
-
-        """texture = Texture.create_for_size(
-            GL_TEXTURE_2D, self.width, self.height)
-        glBindTexture(texture.target, texture.id)
-        glTexParameteri(texture.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-
-        if not gl_info.have_version(1, 2) or True:
-            self.unpack()
-
-        glTexImage2D(texture.target, texture.level,
-            self.format, self.width, self.height, 0,
-            self.format, self.packed_format, self.data)
-
-        self._current_texture = texture
-        return texture"""
-    
-    texture = property(_get_texture)
-
-    def get_texture(self, rectangle=False, force_rectangle=False):
-        '''The parameters 'rectangle' and 'force_rectangle' are ignored.
-           See the documentation of the method 'AbstractImage.get_texture' for
-           a more detailed documentation of the method. '''
-        return self._get_texture()
-
 def decode_dxt1_rgb(data, width, height):
     # Decode to 16-bit RGB UNSIGNED_SHORT_5_6_5
     out = (ctypes.c_uint16 * (width * height))()
 
     # Read 8 bytes at a time
     image_offset = 0
-    for c0_lo, c0_hi, c1_lo, c1_hi, b0, b1, b2, b3 in split_8byte.findall(data):
-        color0 = ord(c0_lo) | ord(c0_hi) << 8
-        color1 = ord(c1_lo) | ord(c1_hi) << 8
-        bits = ord(b0) | ord(b1) << 8 | ord(b2) << 16 | ord(b3) << 24
+    for c0_lo, c0_hi, c1_lo, c1_hi, b0, b1, b2, b3 in chunks(data, 8):
+        color0 = c0_lo | c0_hi << 8
+        color1 = c1_lo | c1_hi << 8
+        bits = b0 | b1 << 8 | b2 << 16 | b3 << 24
 
         r0 = color0 & 0x1f
         g0 = (color0 & 0x7e0) >> 5
@@ -140,18 +78,18 @@ def decode_dxt1_rgb(data, width, height):
                     out[i] = 0
                 else:
                     if code == 2 and color0 > color1:
-                        r = (2 * r0 + r1) / 3
-                        g = (2 * g0 + g1) / 3
-                        b = (2 * b0 + b1) / 3
+                        r = int((2 * r0 + r1) / 3)
+                        g = int((2 * g0 + g1) / 3)
+                        b = int((2 * b0 + b1) / 3)
                     elif code == 3 and color0 > color1:
-                        r = (r0 + 2 * r1) / 3
-                        g = (g0 + 2 * g1) / 3
-                        b = (b0 + 2 * b1) / 3
+                        r = int((r0 + 2 * r1) / 3)
+                        g = int((g0 + 2 * g1) / 3)
+                        b = int((b0 + 2 * b1) / 3)
                     else:
                         assert code == 2 and color0 <= color1
-                        r = (r0 + r1) / 2
-                        g = (g0 + g1) / 2
-                        b = (b0 + b1) / 2
+                        r = int((r0 + r1) / 2)
+                        g = int((g0 + g1) / 2)
+                        b = int((b0 + b1) / 2)
                     out[i] = r | g << 5 | b << 11
 
                 bits >>= 2
@@ -162,8 +100,7 @@ def decode_dxt1_rgb(data, width, height):
         advance_row = (image_offset + 4) % width == 0
         image_offset += width * 3 * advance_row + 4
 
-    return PackedImageData(width, height, 
-        GL_RGB, GL_UNSIGNED_SHORT_5_6_5, out)
+    return out
 
 def decode_dxt1_rgba(data, width, height):
     # Decode to GL_RGBA
@@ -225,7 +162,6 @@ def decode_dxt1_rgba(data, width, height):
         advance_row = (image_offset + 16) % pitch == 0
         image_offset += pitch * 3 * advance_row + 16
     return out
-    #return PackedImageData(width, height, GL_RGBA, GL_UNSIGNED_BYTE, out)
 
 
 def decode_dxt3(data, width, height):
@@ -293,7 +229,6 @@ def decode_dxt3(data, width, height):
         advance_row = (image_offset + 16) % pitch == 0
         image_offset += pitch * 3 * advance_row + 16
     return out
-    #return PackedImageData(width, height, GL_RGBA, GL_UNSIGNED_BYTE, out)
 
 import txd
 f = txd.file("../fronten1.txd")
