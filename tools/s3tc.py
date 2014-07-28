@@ -46,62 +46,6 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i+n]
 
-def decode_dxt1_rgb(data, width, height):
-    # Decode to 16-bit RGB UNSIGNED_SHORT_5_6_5
-    out = (ctypes.c_uint16 * (width * height))()
-
-    # Read 8 bytes at a time
-    image_offset = 0
-    for c0_lo, c0_hi, c1_lo, c1_hi, b0, b1, b2, b3 in chunks(data, 8):
-        color0 = c0_lo | c0_hi << 8
-        color1 = c1_lo | c1_hi << 8
-        bits = b0 | b1 << 8 | b2 << 16 | b3 << 24
-
-        r0 = color0 & 0x1f
-        g0 = (color0 & 0x7e0) >> 5
-        b0 = (color0 & 0xf800) >> 11
-        r1 = color1 & 0x1f
-        g1 = (color1 & 0x7e0) >> 5
-        b1 = (color1 & 0xf800) >> 11
-
-        # i is the dest ptr for this block
-        i = image_offset
-        for y in range(4):
-            for x in range(4):
-                code = bits & 0x3
-
-                if code == 0:
-                    out[i] = color0
-                elif code == 1:
-                    out[i] = color1
-                elif code == 3 and color0 <= color1:
-                    out[i] = 0
-                else:
-                    if code == 2 and color0 > color1:
-                        r = int((2 * r0 + r1) / 3)
-                        g = int((2 * g0 + g1) / 3)
-                        b = int((2 * b0 + b1) / 3)
-                    elif code == 3 and color0 > color1:
-                        r = int((r0 + 2 * r1) / 3)
-                        g = int((g0 + 2 * g1) / 3)
-                        b = int((b0 + 2 * b1) / 3)
-                    else:
-                        assert code == 2 and color0 <= color1
-                        r = int((r0 + r1) / 2)
-                        g = int((g0 + g1) / 2)
-                        b = int((b0 + b1) / 2)
-                    out[i] = r | g << 5 | b << 11
-
-                bits >>= 2
-                i += 1
-            i += width - 4
-
-        # Move dest ptr to next 4x4 block
-        advance_row = (image_offset + 4) % width == 0
-        image_offset += width * 3 * advance_row + 4
-
-    return out
-
 def decode_dxt1_rgba(data, width, height):
     # Decode to GL_RGBA
     out = (ctypes.c_ubyte * (width * height * 4))()
@@ -232,9 +176,9 @@ def decode_dxt3(data, width, height):
 
 import txd
 f = txd.file("../fronten1.txd")
-tex = f.children[12]
-t = decode_dxt3(tex.texture, tex.width, tex.height)
+tex = f.children[10]
+t = decode_dxt1_rgb(tex.texture, tex.width, tex.height)
 
 from PIL import Image
-out = Image.frombuffer("RGBA", (tex.width,tex.height), t, 'raw', 'RGBA', 0, 1)
+out = Image.frombuffer("RGB", (tex.width,tex.height), t, 'raw', 'RGB', 0, 1)
 out.save("txd.png")
