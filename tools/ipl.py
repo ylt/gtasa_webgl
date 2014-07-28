@@ -25,14 +25,15 @@ def convert(filename):
             data[current].append({
                 "ID":int(ldata[0]),
                 "ModelName":ldata[1],
-                "PosX":float(ldata[2]),
-                "PosY":float(ldata[3]),
-                "PosZ":float(ldata[4]),
-                "RotX":float(ldata[5]),
-                "RotY":float(ldata[6]),
-                "RotZ":float(ldata[7]),
-                "RotW":float(ldata[8]),
-                "LOD":int(ldata[9]),
+                "Interior":int(ldata[2]),
+                "PosX":float(ldata[3]),
+                "PosY":float(ldata[4]),
+                "PosZ":float(ldata[5]),
+                "RotX":float(ldata[6]),
+                "RotY":float(ldata[7]),
+                "RotZ":float(ldata[8]),
+                "RotW":float(ldata[9]),
+                "LOD":int(ldata[10]),
             })
         else:
             data[current].append(ldata)
@@ -41,3 +42,4 @@ def convert(filename):
         if len(data[k]) == 0:
             del data[k]
     return data
+    
