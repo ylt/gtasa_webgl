@@ -17,8 +17,7 @@ class section():
         
         self.f.seek(end)
         
-        if not section:
-            return False
+        return False
     def readStruct(self):
         pass
     def readAll(self):
@@ -27,9 +26,9 @@ class section():
                 break
             
             child = self.readSection()
-            if child == False:
-                break
-            self.children.append(child)
+
+            if child:
+                self.children.append(child)
             
             
 class file(section):
@@ -72,6 +71,10 @@ class texture_native(section):
         self.flags, \
         self.data_size \
                 = self.read_struct("<IHBB32s32sIIHHBBBBI")
+        
+        #convert back to ascii string and strip off the null terminators
+        self.texture_name = self.texture_name.decode('ascii').rstrip("\x00")
+        self.alpha_name = self.alpha_name.decode('ascii').rstrip("\x00")
         
         self.texture = self.f.read(self.data_size)
 file("../fronten1.txd")
