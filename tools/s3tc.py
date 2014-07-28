@@ -57,7 +57,7 @@ def decode_dxt1_rgba(data, width, height):
         color0 = c0_lo | c0_hi << 8
         color1 = c1_lo | c1_hi << 8
         bits = b0 | b1 << 8 | b2 << 16 | b3 << 24
-        print(color0)
+
         r0 = color0 & 0x1f
         g0 = (color0 & 0x7e0) >> 5
         b0 = (color0 & 0xf800) >> 11
@@ -173,12 +173,3 @@ def decode_dxt3(data, width, height):
         advance_row = (image_offset + 16) % pitch == 0
         image_offset += pitch * 3 * advance_row + 16
     return out
-
-import txd
-f = txd.file("../fronten1.txd")
-tex = f.children[10]
-t = decode_dxt1_rgb(tex.texture, tex.width, tex.height)
-
-from PIL import Image
-out = Image.frombuffer("RGB", (tex.width,tex.height), t, 'raw', 'RGB', 0, 1)
-out.save("txd.png")
