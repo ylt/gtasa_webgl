@@ -1,5 +1,5 @@
 import struct
-
+from enum import Enum
 
 class section():
     def read_struct(self,format):
@@ -45,7 +45,7 @@ class file(section):
         
     def readStruct(self):
         self.texture_count, self.unknown = self.read_struct("HH")
-        
+
 class texture_native(section):
     def __init__(self, f, end):
         self.f = f
@@ -71,10 +71,19 @@ class texture_native(section):
         self.flags, \
         self.data_size \
                 = self.read_struct("<IHBB32s32sIIHHBBBBI")
+            
+        self.texture = self.f.read(self.data_size)
         
         #convert back to ascii string and strip off the null terminators
         self.texture_name = self.texture_name.decode('ascii').rstrip("\x00")
         self.alpha_name = self.alpha_name.decode('ascii').rstrip("\x00")
         
-        self.texture = self.f.read(self.data_size)
-file("../fronten1.txd")
+    def hasAlpha(self):
+        format = self.direct3d_texture_format
+        if format == 0 or format == 0x16 or format == 0x31545844: # 1TXD
+            return False
+        elif format == 1 or format == 0x15 or format == 0x33545844: #3TXD
+            return True
+        return None
+    
+f = file("../fronten1.txd")
