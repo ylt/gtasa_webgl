@@ -156,10 +156,10 @@ class texture_native(section):
                 g = ((value >> 5) & 0xf8) / 0xfc * 255
                 b = ((value >> 10) & 0xf8)/ 0xf8 * 255
             
-            out[out_pos] = b
-            out[out_pos+1] = g
-            out[out_pos+3] = r
-            out[out_pos+4] = a
+            out[out_pos] = int(b)
+            out[out_pos+1] = int(g)
+            out[out_pos+2] = int(r)
+            out[out_pos+3] = int(a)
             out_pos += 4
         return Image.frombuffer("RGBA", (self.width, self.height), out, 'raw', 'RGBA', 0, 1)
 f = file("../particle.txd")
