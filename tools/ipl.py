@@ -42,4 +42,3 @@ def convert(filename):
         if len(data[k]) == 0:
             del data[k]
     return data
-    

@@ -162,4 +162,3 @@ class texture_native(section):
             out[out_pos+3] = int(a)
             out_pos += 4
         return Image.frombuffer("RGBA", (self.width, self.height), out, 'raw', 'RGBA', 0, 1)
-f = file("../particle.txd")
