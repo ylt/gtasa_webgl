@@ -115,7 +115,8 @@ class texture_native(section):
             t = s3tc.decode_dxt3(self.texture, self.width, self.height)
             return Image.frombuffer("RGBA", (self.width, self.height), t, 'raw', 'RGBA', 0, 1)
         
-        raster_format = self.raster_format & 0x0100
+        raster_format = self.raster_format & 0x0F00
+ 
         if raster_format == 0x0500: #RGBA :D
             return Image.frombuffer("RGBA", (self.width, self.height), self.texture, 'raw', 'RGBA', 0, 1)
         elif raster_format == 0x0600: #RGB :D
