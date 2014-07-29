@@ -153,7 +153,7 @@ class texture_native(section):
             elif raster_format == 0x0A00: # FORMAT_555
                 #(5 bits red, 6 bits green, 5 bits blue; also used for DXT1 without alpha)
                 r = (value & 0xf8)        / 0xf8 * 255
-                g = ((value >> 5) & 0xf8) / 0xfc * 255
+                g = ((value >> 5) & 0xf8) / 0xf8 * 255
                 b = ((value >> 10) & 0xf8)/ 0xf8 * 255
             
             out[out_pos] = int(b)
