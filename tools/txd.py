@@ -127,7 +127,7 @@ class texture_native(section):
         out_pos = 0
         for pos in range(0, self.width*self.height, self.depth/4):
             r,g,b,a = 0,0,0,0
-            value, = struct.unpack_from("H", self.texture, pos)
+            value, = struct.unpack_from(">H", self.texture, pos)
             if raster_format == 0x0000: # Default - Wut do here?
                 pass
             elif raster_format == 0x0100: # FORMAT_1555
