@@ -70,7 +70,7 @@ class convert():
         material = {
             "uuid":m_uuid,
             "type":"MeshNormalMaterial",
-            #"type":"MeshBasicMaterial",
+            "type":"MeshBasicMaterial",
             "color":self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
             "transparency": mat.col[3]/255,
             "emissive": self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
@@ -78,7 +78,8 @@ class convert():
             "ambient": self.convert_rgb(mat.col[0]/255*mat.ambient, mat.col[1]/255*mat.ambient, mat.col[2]/255*mat.ambient),
             "specular": self.convert_rgb(mat.col[0]*mat.specular, mat.col[1]*mat.specular, mat.col[2]*mat.specular),
             "vertexColors": geometry.vertCol,
-            #"shading": "Phong"
+            "shading": "Normal",
+            
         }
         
         if mat.texture:
@@ -99,7 +100,7 @@ class convert():
                 "vertices": [],
                 "faces": [],
                 "normals": [],
-                "uv": []
+                "uvs": [[]]
             }
         }
         self.data["geometries"].append(geo)
@@ -112,20 +113,20 @@ class convert():
             mats.append(m_id)
             
         vertices = geo["data"]["vertices"]
-        uv = geo["data"]["uv"]
+        uvs = geo["data"]["uvs"][0]
         normals = geo["data"]["normals"]
         faces = geo["data"]["faces"]
         
         for vertex in geometry.vertices:
             vertices.extend(vertex.desc() or [])
             normals.extend(vertex.normal or [])
-            uv.append(vertex.uv or [])
+            uvs.append(vertex.uv or [])
             
         for triangle in geometry.triangles:
-            faces.append(GEOM_FACE_MATERIAL | GEOM_FACE_VERTEX_NORMAL )
+            faces.append(GEOM_FACE_MATERIAL | GEOM_FACE_VERTEX_NORMAL | GEOM_FACE_VERTEX_UV)
             faces.extend(triangle.desc())
             faces.append(mats[triangle.mat])
-            #faces.extend(triangle.desc())
+            faces.extend(triangle.desc())
             faces.extend(triangle.desc())
             
             
