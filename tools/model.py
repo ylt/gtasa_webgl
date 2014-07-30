@@ -1,8 +1,16 @@
 import uuid
-import json
 import os
-import parse
+import readers.dff
 import random
+
+GEOM_QUAD              = 0b00000001
+GEOM_FACE_MATERIAL     = 0b00000010
+GEOM_FACE_UV           = 0b00000100
+GEOM_FACE_VERTEX_UV    = 0b00001000
+GEOM_FACE_NORMAL       = 0b00010000
+GEOM_FACE_VERTEX_NORMAL= 0b00100000
+GEOM_FACE_COLOR        = 0b01000000
+GEOM_FACE_VERTEX_COLOR = 0b10000000
 
 class convert():
     @staticmethod
@@ -20,11 +28,12 @@ class convert():
             "geometries": [
             ],
             "materials":[{"type": "MeshFaceMaterial", "materials":[]}],
+            "textures":[]
         }
         self.randCols = randCols
         self.objects = []
         
-        rw = parse.ImportRenderware(filename)
+        rw = readers.dff.ImportRenderware(filename)
         
         for frame in rw.childrenOf[0]:
             self.build_frame(rw.frames[frame], self.objects)
@@ -44,26 +53,42 @@ class convert():
     def convert_rgb(self, r,g,b):
         return (int(b) << 16) + (int(g) << 8) + int(r),
     
-    def build_texture(self, texture):
-        {
-            "url":"url"
-        }
+    #def build_image(self, image):
+    #    for d in self.data["images"]:
+            
+    #engine will properly finish texture construction during runtime
+    def build_texture(self, texture, uuid):
+        self.data["textures"].append({
+            "uuid":uuid,
+            "intensity":texture.intensity, #not sure how to use
+            "url":texture.name,
+        })
     
-    def build_material(self, uuid, mat, geometry):
+    def build_material(self, m_uuid, mat, geometry):
         if self.randCols:
             mat.col = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
-        self.data["materials"][0]["materials"].append({
-            "uuid":uuid,
-            "type":"MeshPhongMaterial",
+        material = {
+            "uuid":m_uuid,
+            "type":"MeshNormalMaterial",
             #"type":"MeshBasicMaterial",
             "color":self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
             "transparency": mat.col[3]/255,
             "emissive": self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
+            "shininess": 100,
             "ambient": self.convert_rgb(mat.col[0]/255*mat.ambient, mat.col[1]/255*mat.ambient, mat.col[2]/255*mat.ambient),
             "specular": self.convert_rgb(mat.col[0]*mat.specular, mat.col[1]*mat.specular, mat.col[2]*mat.specular),
             "vertexColors": geometry.vertCol,
-            "shading": "Phong"
-        })
+            #"shading": "Phong"
+        }
+        
+        if mat.texture:
+            t_uuid = str(uuid.uuid4())
+            self.build_texture(mat.texture, t_uuid)
+            material["map"] = t_uuid
+            
+        
+        self.data["materials"][0]["materials"].append(material)
+        
         return len(self.data["materials"][0]["materials"])-1
     
     def build_geometry(self, g_uuid, geometry, frame):
@@ -73,8 +98,8 @@ class convert():
             "data": {
                 "vertices": [],
                 "faces": [],
-                "normals": []
-                #uv
+                "normals": [],
+                "uv": []
             }
         }
         self.data["geometries"].append(geo)
@@ -87,17 +112,22 @@ class convert():
             mats.append(m_id)
             
         vertices = geo["data"]["vertices"]
+        uv = geo["data"]["uv"]
         normals = geo["data"]["normals"]
         faces = geo["data"]["faces"]
         
         for vertex in geometry.vertices:
             vertices.extend(vertex.desc() or [])
             normals.extend(vertex.normal or [])
+            uv.append(vertex.uv or [])
             
         for triangle in geometry.triangles:
-            faces.append(2)
+            faces.append(GEOM_FACE_MATERIAL | GEOM_FACE_VERTEX_NORMAL )
             faces.extend(triangle.desc())
             faces.append(mats[triangle.mat])
+            #faces.extend(triangle.desc())
+            faces.extend(triangle.desc())
+            
             
     def build_frame(self, frame, parent):
         
