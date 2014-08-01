@@ -4,8 +4,8 @@ def read_struct(f,format):
     size = struct.calcsize(format)
     return struct.unpack(format, f.read(size))    
 
-def read(self, filename):
-    f = open(filename, "r")
+def read(filename):
+    f = open(filename, "rb")
     
     header = read_struct(f, "<IIIIIIIIIIIIIIIIII")
     
