@@ -64,6 +64,26 @@ def convert(filename):
                 entry["DrawDistance"] = float(ldata[3])
                 entry["Flags"] = int(ldata[4])
             data[current].append(entry)
+        elif current == "tobj":
+            data[current].append({
+                "ID":int(ldata[0]),
+                "ModelName": ldata[1],
+                "TextureName": ldata[2],
+                "ObjectCount": int(ldata[3]),
+                "DrawDistance": float(ldata[4]),
+                "Flags":int(ldata[5]),
+                "TImeOn":int(ldata[6]),
+                "TImeOff":int(ldata[7])
+            })
+        elif current == "anim":
+            data[current].append({
+                "ID":int(ldata[0]),
+                "ModelName": ldata[1],
+                "TextureName": ldata[2],
+                "AnimationName": ldata[3],
+                "DrawDistance": float(ldata[4]),
+                "Flags":int(ldata[5]),
+            })
         else:
             data[current].append(ldata)
 
