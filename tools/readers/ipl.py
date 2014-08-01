@@ -3,6 +3,9 @@ def convert(filename):
     
     data = {}
     current = None
+
+    objlods = []       
+    
     for line in f:
         line = line.strip()
     
@@ -18,11 +21,12 @@ def convert(filename):
             continue
         
         ldata = [item.strip() for item in line.split(",")]        
+             
         
         if current == "inst":
             ID, ModelName, Interior, PosX, PosY, PosZ, RotX, RotY, RotZ, RotW, LOD = ldata
             
-            data[current].append({
+            entry = {
                 "ID":int(ldata[0]),
                 "ModelName":ldata[1],
                 "Interior":int(ldata[2]),
@@ -34,8 +38,12 @@ def convert(filename):
                 "RotZ":float(ldata[8]),
                 "RotW":float(ldata[9]),
                 "LOD":int(ldata[10]),
-            })
+            }
             
+            if entry["LOD"] != -1:
+                objlods.append(entry["LOD"])
+                
+            data[current].append(entry)
         elif current == "objs":
             entry = {
                 "ID":int(ldata[0]),
@@ -63,9 +71,9 @@ def convert(filename):
             elif dlen == 5:
                 entry["DrawDistance"] = float(ldata[3])
                 entry["Flags"] = int(ldata[4])
+                
             data[current].append(entry)
         elif current == "tobj":
-            print(ldata)
             entry = {
                 "ID":int(ldata[0]),
                 "ModelName": ldata[1],
@@ -97,4 +105,9 @@ def convert(filename):
     for k in list(data.keys()):
         if len(data[k]) == 0:
             del data[k]
+            
+    #print (objlods)
+    for inst in objlods:
+        data["inst"][inst]["isLOD"] = True
+        
     return data
