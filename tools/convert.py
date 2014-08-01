@@ -1,4 +1,5 @@
 import readers.ipl
+import readers.bipl
 import model
 import readers.txd
 
@@ -87,7 +88,7 @@ gtapath = "/home/joe/win8vm-files/Grand Theft Auto San Andreas/"
 gtaimgpath = "/home/joe/win8vm-files/gta3/"
 target = "/home/joe/sineapps/gta/git/web/data/"
 dat = gta3_dat(gtapath+"data/gta.dat")
-overwrite = True #don't redo already done models
+overwrite = False #don't redo already done models
 
 filter_flags = ["NONE", "NEAREST", "LINEAR", "MIP_NEAREST", "MIP_LINEAR", "LINEAR_MIP_NEAREST", "LINEAR_MIP_LINEAR"]
 texture_wrap = ["NONE", "WRAP", "MIRROR", "CLAMP"]
@@ -130,7 +131,7 @@ def do_dffs(dffs, in_models, dffpath, targetpath):
         
         txdpath = ""
         if dfffile.lower() in in_models:
-            txdpath = "data/textures/"+in_models[dfffile.lower()][2]+"/"
+            txdpath = "data/textures/"+in_models[dfffile.lower()]["TextureName"]+"/"
         
         dff = model.convert(dffpath+dfffile.lower()+".dff", txdpath)
         
@@ -155,11 +156,15 @@ for ipl in dat["IPL"]:
     
     merge_dicts(data, d)
 
+for file in os.listdir(gtaimgpath):
+    if file.endswith(".ipl"):
+        d = readers.bipl.read(gtaimgpath+file)
+        merge_dicts(data, d)
+        
 
 #merge in anim and tobj
 data["objs"].extend(data["tobj"])
 data["objs"].extend(data["anim"])
-
 
 
 objects = data["objs"]
@@ -190,8 +195,10 @@ for inst in data["inst"]:
         pass
         #print("Missing: %s", inst)
         
-    if inst not in models:   
-        models.append(inst["ModelName"])
+    if inst not in models_ipl:
+        #models.append(inst["ModelName"])
+        inst["ModelName"] = inst["ide"]["ModelName"]
+        models.append(inst["ide"]["ModelName"])
         models_ipl.append(inst)
 #print(textures)
 #print(models)
