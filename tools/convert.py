@@ -156,12 +156,18 @@ for ipl in dat["IPL"]:
     merge_dicts(data, d)
 
 
+#merge in anim and tobj
+data["objs"].extend(data["tobj"])
+data["objs"].extend(data["anim"])
+
+
+
 objects = data["objs"]
 in_models = {}
 in_id = {}
 for obj in objects:
-    in_models[obj[1].lower()] = obj
-    in_id[int(obj[0])] = obj
+    in_models[obj["ModelName"].lower()] = obj
+    in_id[obj["ID"]] = obj
 #print(json.dumps(objects, sort_keys=True))
 
 textures = []
@@ -176,8 +182,8 @@ for inst in data["inst"]:
     if inst["ID"] in in_id:
         obj = in_id[inst["ID"]]
         
-        if obj[2] not in textures:
-            textures.append(obj[2])
+        if obj["TextureName"] not in textures:
+            textures.append(obj["TextureName"])
             
         inst["ide"] = obj
     else:
