@@ -1,6 +1,6 @@
 import ctypes
 import struct
-import s3tc
+from . import s3tc
 from PIL import Image
 
 from enum import Enum

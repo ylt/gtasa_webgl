@@ -9,7 +9,7 @@ var windowHalfY = window.innerHeight / 2;
 var fieldOfView = 45;
 var drawDistance = 500;
 var skyColour = 0x6FAEDC;
-var fogDistance = 0.007000;
+var fogDistance = 0.001000;
 
 $(function() {
 	init();
@@ -59,9 +59,9 @@ function init()
 	container = document.getElementById('container');
 
 	camera = new THREE.PerspectiveCamera(fieldOfView, window.innerWidth/window.innerHeight, 0.1, drawDistance);
-	camera.position.x = 1893;
-	camera.position.y = 1967;
-	camera.position.z = 100;
+	camera.position.x = 2127;
+	camera.position.y = 2453;
+	camera.position.z = 10;
 	
 	camera.up = THREE.Vector3(0,0,1);
 	controls = new THREE.FlyControls( camera );
@@ -78,81 +78,12 @@ function init()
 	
 	scene.fog = new THREE.FogExp2(skyColour,fogDistance);
 
-	light = new THREE.DirectionalLight(0xffffff);
-	light.position.set(0, 0, 1).normalize();
+	/*light = new THREE.DirectionalLight(0xffffff);
+	light.position.set(0, 0, 1).normalize();*/
+	light = new THREE.AmbientLight(0xFFFFFF);
 	scene.add(light);
 
 
-
-	// Add objects from file(s)
-	/*var json = '[{"file": "objects/arrowhead.js", "PosX": -10 ,"PosY": 0,"PosZ": 0,"RotX": 45,"RotY": 45, "RotZ": 45,"RotW": 45 ,"LOD": 1},' + 
-'{"file": "objects/arrowhead.js", "PosX": 0 ,"PosY": 0,"PosZ": 0,"RotX": 45,"RotY": 45, "RotZ": 45,"RotW": 45 ,"LOD": 1}]';
-	json = JSON.parse(json);
-	json.forEach(function(obj) {
-		scene.add(addObjectFromFile(obj.file,obj.PosX, obj.PosY, obj.PosZ, obj.RotX, obj.RotY, obj.RotZ, obj.RotW, obj.LOD));
-	});*/
-	
-	/*
-	var loader = new THREE.ObjectLoader();
-	loader.load("objects/coach.js", function(obj){
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	*/
-	var loader = new THREE.ObjectLoader();
-	/*
-	loader.load("objects/donuts_sfw.js", function(obj){
-		obj.position.y = 10;
-		obj.position.x = 10;
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	*/
-	/*
-	loader.load("objects/donuts_sfw.js", function(obj){
-		obj.position.y = 5;
-		obj.position.x = 5;
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	
-	loader.load("objects/lake_sfw.js", function(obj){
-		obj.position.y = -5;
-		obj.position.x = -5;
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	
-	loader.load("objects/coach.js", function(obj){
-		obj.position.y = -10;
-		obj.position.x = -10;
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	
-	loader.load("objects/coach.js", function(obj){
-		obj.position.y = -15;
-		obj.position.x = -15;
-		obj.rotation.x = 0;
-		obj.rotation.y = 0;
-		obj.rotation.x = 0;
-		scene.add(obj);
-	});
-	*/
-	
-	//scene.add(addInst(1, "box", "interior", 0, 0, 0, 45, 45, 45, 45, -1));
-	
-	//scene.add(addObjectFromFile('objects/arrowhead.js',-10, 0, 0, 45, 45, 45, 45, -1));
 
 	renderer = new THREE.WebGLRenderer({ antialias: false });	// Turn antialias off for now
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -171,15 +102,42 @@ function init()
 
 	window.addEventListener('resize', onWindowResize, false);
 	
-	$.getJSON("IPL.js", function(data) {
+	var loader = new THREE.ObjectLoader();
+	var mloader = new THREE.Loader();
+	loader.texturePath = "./";
+	$.getJSON("data/positions.json", function(data) {
 		var j = 0;
 		for (var i in data)
 		{
 			var item = data[i];
 			if (item.LOD == -1) {
 				var callback = (function(item){
-					return function(obj){
+					return function(json){
+						obj = loader.parse(json)
+						
+						/*mats = obj["materials"][0];
+						for (var i in mats) {
+							jmat = mats[i];
+							tmat = obj.material.materials[i];
+							//		function create_texture( where, name, sourceFile, repeat, offset, wrap, anisotropy ) {
+							//create_texture( mpars, 'map', m.mapDiffuse, m.mapDiffuseRepeat, m.mapDiffuseOffset, m.mapDiffuseWrap, m.mapDiffuseAnisotropy );
+							loader.create_texture(tmat, 'map', undefined, undefined, 
+						}*/
+						
+						var m = mloader.initMaterials(json.materials[0].materials, "./");
+						for (mat_i in m) {
+							mat = m[mat_i]
+							map = mat.mat
+							if (map) {
+								map.wrapS = THREE.RepeatWrapping
+								map.wrapT = THREE.RepeatWrapping
+								map.magFilter = THREE.NearestFilter
+							}
+						}
+						obj.material = new THREE.MeshFaceMaterial(m);
+						
 						scene.add(obj);
+						
 						
 						obj.position.x = item.PosX;
 						obj.position.y = item.PosY;
@@ -199,28 +157,19 @@ function init()
 						
 						obj.up = THREE.Vector3(0,0,1);
 						//console.log(item);
-						//console.log(obj);
+						console.log(obj);
 					}
 				}
 				)(item);
 				
-				loader.load("models/"+item["ModelName"]+".js", callback);
+				$.getJSON("data/models/"+item["ModelName"]+".js", callback)
+				//loader.load("data/models/"+item["ModelName"]+".js", callback);
 				/*j ++;
 				if (j > 5)
 					break;*/
 			}
 		}
 	});
-	
-	// Set camera to pretty area
-	
-	camera.position.x = 1479.63909229102;
-	camera.position.y = 2473.2470252524013;
-	camera.position.z = 15.388867040383882;
-	
-	camera.rotation.x = -1.5828726737676089;
-	camera.rotation.y = -0.4596641624974161;
-	camera.rotation.z = -3.118131702706542;
 }
 
 

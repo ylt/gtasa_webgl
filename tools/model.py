@@ -14,11 +14,11 @@ GEOM_FACE_VERTEX_COLOR = 0b10000000
 
 class convert():
     @staticmethod
-    def convert(filename):
-        return convert(filename).data
+    def convert(filename, txdpath):
+        return convert(filename, txdpath).data
         
     # data
-    def __init__(self, filename, randCols=False):
+    def __init__(self, filename, txdpath, randCols=False):
         self.data = {
             "metadata": {
                 "version": 4.3,
@@ -28,9 +28,12 @@ class convert():
             "geometries": [
             ],
             "materials":[{"type": "MeshFaceMaterial", "materials":[]}],
-            "textures":[]
+            "textures":[],
+            "images":[]
         }
         self.randCols = randCols
+        self.txdpath = txdpath
+        
         self.objects = []
         
         rw = readers.dff.ImportRenderware(filename)
@@ -57,11 +60,17 @@ class convert():
     #    for d in self.data["images"]:
             
     #engine will properly finish texture construction during runtime
-    def build_texture(self, texture, uuid):
+    def build_texture(self, texture, t_uuid):
+        i_uuid = str(uuid.uuid4())
         self.data["textures"].append({
-            "uuid":uuid,
+            "uuid":t_uuid,
             "intensity":texture.intensity, #not sure how to use
-            "url":texture.name,
+            "image":i_uuid
+        })
+        
+        self.data["images"].append({
+            "uuid":i_uuid,
+            "url":self.txdpath+texture.name+".png",
         })
     
     def build_material(self, m_uuid, mat, geometry):
@@ -69,24 +78,26 @@ class convert():
             mat.col = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 255)
         material = {
             "uuid":m_uuid,
-            "type":"MeshNormalMaterial",
-            "type":"MeshBasicMaterial",
-            "color":self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
-            "transparency": mat.col[3]/255,
-            "emissive": self.convert_rgb(mat.col[0], mat.col[1], mat.col[2]),
-            "shininess": 100,
-            "ambient": self.convert_rgb(mat.col[0]/255*mat.ambient, mat.col[1]/255*mat.ambient, mat.col[2]/255*mat.ambient),
-            "specular": self.convert_rgb(mat.col[0]*mat.specular, mat.col[1]*mat.specular, mat.col[2]*mat.specular),
-            "vertexColors": geometry.vertCol,
-            "shading": "Normal",
-            
+            #"type":"MeshNormalMaterial",
+            "type":"MeshPhongMaterial",
+            "Dbgcolor":(mat.col[0], mat.col[1], mat.col[2]),
+            #"transparency": mat.col[3]/255,
+            #"colorEmissive": (mat.col[0], mat.col[1], mat.col[2]),
+            #"specularCoef": 100,
+            #"colorAmbient": self.convert_rgb(mat.col[0]/255*mat.ambient, mat.col[1]/255*mat.ambient, mat.col[2]/255*mat.ambient),
+            #"colorSpecular": (mat.col[0]*mat.specular, mat.col[1]*mat.specular, mat.col[2]*mat.specular),
+            #"vertexColors": geometry.vertCol,
+            #"shading": "lambert"
+            "colorAmbient" : [0.5, 0.5, 0.5],
+            "colorDiffuse" : [0.6400000190734865, 0.6400000190734865, 0.6400000190734865],
+            "colorSpecular" : [0.5, 0.5, 0.5],
+            "specularCoef" : 12,
         }
         
         if mat.texture:
-            t_uuid = str(uuid.uuid4())
-            self.build_texture(mat.texture, t_uuid)
-            material["map"] = t_uuid
-            
+            #t_uuid = str(uuid.uuid4())
+            #self.build_texture(mat.texture, t_uuid)
+            material["mapDiffuse"] = self.txdpath+mat.texture.name+".png",
         
         self.data["materials"][0]["materials"].append(material)
         
@@ -120,7 +131,7 @@ class convert():
         for vertex in geometry.vertices:
             vertices.extend(vertex.desc() or [])
             normals.extend(vertex.normal or [])
-            uvs.append(vertex.uv or [])
+            uvs.extend(vertex.uv or [])
             
         for triangle in geometry.triangles:
             faces.append(GEOM_FACE_MATERIAL | GEOM_FACE_VERTEX_NORMAL | GEOM_FACE_VERTEX_UV)

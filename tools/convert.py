@@ -1,6 +1,11 @@
 import readers.ipl
+import model
+import readers.txd
+
 import os
 import json
+import math
+import pprint
 
 def gta3_dat(filename):
     #our loader does not care about order
@@ -75,12 +80,64 @@ def merge_dicts(dicta, dictb):
             dicta[key] = list(value)
     return dicta
     
-    
+def distance(pos1, pos2):
+    return math.sqrt(math.pow(pos1[0]-pos2[0], 2) + math.pow(pos1[1]-pos2[1], 2))
+
 gtapath = "/home/joe/win8vm-files/Grand Theft Auto San Andreas/"
 gtaimgpath = "/home/joe/win8vm-files/gta3/"
 target = "/home/joe/sineapps/gta/git/web/data/"
 dat = gta3_dat(gtapath+"data/gta.dat")
+overwrite = True #don't redo already done models
 
+filter_flags = ["NONE", "NEAREST", "LINEAR", "MIP_NEAREST", "MIP_LINEAR", "LINEAR_MIP_NEAREST", "LINEAR_MIP_LINEAR"]
+texture_wrap = ["NONE", "WRAP", "MIRROR", "CLAMP"]
+    
+def do_txds(txds, txdpath, targetpath):
+    print("*** Processing %d TXD's ***" % len(txds))
+    for txdfile in txds:
+        writepath = targetpath + txdfile + "/"
+        if os.path.exists(writepath):
+            if not overwrite:
+                continue
+        else:
+            os.makedirs(writepath)
+        txd = readers.txd.file(txdpath+txdfile.lower()+".txd")
+        
+        flags = {}        
+        
+        for tex in txd.children:
+            #tex.texture_name
+            tex.getImage().save(writepath+tex.texture_name.lower()+".png")
+            flags[tex.texture_name] = {
+                "wrap_v":tex.texture_wrap_v,
+                "wrap_u":tex.texture_wrap_u,
+                "filter_flags":tex.filter_flags,
+                "raster_format":tex.raster_format,
+                "bit_depth":tex.depth,
+                "compression":tex.getCompression()
+            }
+        
+        f = open(writepath+"metadata.json", "w")
+        json.dump(flags, f)
+        f.close()
+        
+def do_dffs(dffs, in_models, dffpath, targetpath):
+    print("*** Processing %d DFF's ***" % len(dffs))
+    for dfffile in dffs:
+        writepath = targetpath + dfffile + ".js"
+        if not overwrite and os.path.exists(writepath):
+            continue
+        
+        txdpath = ""
+        if dfffile.lower() in in_models:
+            txdpath = "data/textures/"+in_models[dfffile.lower()][2]+"/"
+        
+        dff = model.convert(dffpath+dfffile.lower()+".dff", txdpath)
+        
+        f = open(writepath, "w")
+        json.dump(dff.data, f)
+        f.close()
+        
 #load in IDE's
 data = {}
 for ide in dat["IDE"]:
@@ -89,17 +146,14 @@ for ide in dat["IDE"]:
     
     merge_dicts(data, d)
 
-i = 0
-for ide in dat["IPL"]:
-    filename = path_insensitive(gtapath+ide)
+#and the IPL's
+for ipl in dat["IPL"]:
+    if 'paths' in ipl:
+        continue
+    filename = path_insensitive(gtapath+ipl)
     d = readers.ipl.convert(filename)
     
-    #print(d)    
-    
     merge_dicts(data, d)
-    #=if i > 2:
-    #    break
-    i+=1
 
 
 objects = data["objs"]
@@ -108,12 +162,38 @@ in_id = {}
 for obj in objects:
     in_models[obj[1].lower()] = obj
     in_id[int(obj[0])] = obj
-print(json.dumps(objects, sort_keys=True))
+#print(json.dumps(objects, sort_keys=True))
 
+textures = []
+models = []
+models_ipl = []
 for inst in data["inst"]:
-    #print(inst)
+    #filter to specific area for now
+    dis = distance((2048,2150), (inst["PosX"], inst["PosY"]))
+    if dis > 500:
+        continue
+    
     if inst["ID"] in in_id:
         obj = in_id[inst["ID"]]
-    else:
-        print(json.dumps(inst, sort_keys=True))
         
+        if obj[2] not in textures:
+            textures.append(obj[2])
+            
+        inst["ide"] = obj
+    else:
+        pass
+        #print("Missing: %s", inst)
+        
+    if inst not in models:   
+        models.append(inst["ModelName"])
+        models_ipl.append(inst)
+#print(textures)
+#print(models)
+
+do_txds(textures, gtaimgpath, target+"textures/")
+do_dffs(models, in_models, gtaimgpath, target+"models/")
+
+
+f = open(target+"positions.json", "w")
+json.dump(models_ipl, f)
+f.close()
