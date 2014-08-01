@@ -35,6 +35,35 @@ def convert(filename):
                 "RotW":float(ldata[9]),
                 "LOD":int(ldata[10]),
             })
+            
+        elif current == "objs":
+            entry = {
+                "ID":int(ldata[0]),
+                "ModelName": ldata[1],
+                "TextureName": ldata[2],
+            }
+            dlen= len(ldata)
+            if dlen == 4: #Type 0
+                entry["ObjectCount"] = int(ldata[3])
+            elif dlen == 6: #Type 1
+                entry["ObjectCount"] = int(ldata[3])
+                entry["DrawDistance"] = float(ldata[4])
+                entry["Flags"] = int(ldata[5])
+            elif dlen == 7: #Type 2
+                entry["ObjectCount"] = int(ldata[3])
+                entry["DrawDistance"] = float(ldata[4])
+                entry["DrawDistance2"] = float(ldata[5])
+                entry["Flags"] = ldata[6]
+            elif dlen == 8: #Type 3
+                entry["ObjectCount"] = int(ldata[3])
+                entry["DrawDistance"] = float(ldata[4])
+                entry["DrawDistance2"] = float(ldata[5])
+                entry["DrawDistance3"] = float(ldata[6])
+                entry["Flags"] = ldata[7]
+            elif dlen == 5:
+                entry["DrawDistance"] = float(ldata[3])
+                entry["Flags"] = int(ldata[4])
+            data[current].append(entry)
         else:
             data[current].append(ldata)
 
