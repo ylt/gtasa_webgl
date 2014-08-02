@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+	// Made by Huw Pritchard and Joe Carter @ SineApps.co.uk
+
+	var LocalCacheStorageLoader = function(cacheSize)
+	{
+		this.version = 0.0001;
+		this.cacheSize = 100000000000;
+		return this;
+	};
+
+	LocalCacheStorageLoader.prototype.setCacheSize = function(cacheSize)
+	{
+		this.cacheSize = cacheSize;
+	};
+
+	LocalCacheStorageLoader.prototype.getCacheSize = function()
+	{
+		return this.cacheSize;
+	};
+
+	LocalCacheStorageLoader.prototype.getFile = function(file)
+	{
+		
+		
+		if (typeof(Storage) != "undefined")
+		{
+			if (localStorage.getItem(file))
+			{
+				return localStorage.getItem(file);
+			}
+			else
+			{
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange=function()
+				{
+				if (xmlhttp.readyState==4 && xmlhttp.status==200)
+				{
+					localStorage.setItem(file, xmlhttp.responseText);
+					return xmlhttp.responseText;
+				}
+				else
+					throw "Could not retrieve file.";
+					
+				}
+				xmlhttp.open("GET",file,true);
+				xmlhttp.send();
+			}
+			throw "Your web browser does not support LocalStorage.";
+		}
+	};
+</script>
+LocalCacheStorageLoader.prototype.getFile("image.png");
+</body>
+</html>
