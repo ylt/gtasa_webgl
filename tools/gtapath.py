@@ -9,7 +9,7 @@ class gtapath():
             gtadir(gtapath, ''),
         ]
         
-        self.loadImg("models/gta3.img")
+        self.loadImg("gta3.img")
     
     def getFileData(self, path, mode="r"):
         for item in self.paths:
@@ -41,19 +41,12 @@ class gtadir():
                 
                 self.path_lookup[rpath.lower()] = apath
                 self.file_lookup[file.lower()] = apath
-        print(self.path_lookup)
-    def getFilePath(self, path):
-        if path in self.path_lookup:
-            return self.path_lookup[path]        
-    def getAnyFilePath(self, file):
+
+    def getFilePath(self, file):
         if file in self.file_lookup:
             return self.file_lookup[file]
             
     def readFile(self, path, mode):
-        if path in self.path_lookup:
-            with open(self.path_lookup[path], mode) as f:
-                return f.read()
-    def readAnyFile(self, path, mode):
         if path in self.file_lookup:
             with open(self.file_lookup[path], mode) as f:
                 return f.read()
