@@ -7,6 +7,7 @@ class img():
         
     def __init__(self, filename):
         self.f = open(filename, "rb")
+        
         magic, self.file_count = self.read_struct("<II")
         #TODO: check if magic == 2REV (VER2 in little endian)
         if magic != 0x32524556:
@@ -30,7 +31,7 @@ class img():
             self.file_dict[filename.lower()] = entry
     def hasFile(self, filename):
         return filename.lower() in self.file_dict
-        
+    
     def readFile(self, filename):
         entry = self.file_dict[filename.lower()]
         self.f.seek(entry["Offset"]*2048)

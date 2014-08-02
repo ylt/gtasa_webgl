@@ -166,7 +166,7 @@ class convert():
             
             self.build_geometry(ob["geometry"], frame.geometry, frame)
         
-        if "_vlo" in frame.name or "_dam" in frame.name:
+        if not frame.name or "_vlo" in frame.name or "_dam" in frame.name:
             ob["visible"]=False
         
         if len(frame.loader.childrenOf[frame.index+1]) > 0:
