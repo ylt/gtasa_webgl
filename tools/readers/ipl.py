@@ -72,9 +72,7 @@ class ipl():
                 getattr(self, current, ldata)
                 
     def read_binary(self, filename):
-        print(filename)
         f = self.gtapath.getFileHandle(filename, "rb")
-        print(f)
         
         header = _read_struct(f, "<IIIIIIIIIIIIIIIIII")
         
