@@ -2,9 +2,7 @@ def convert(filename):
     f = open(filename)
     
     data = {}
-    current = None
-
-    objlods = []       
+    current = None     
     
     for line in f:
         line = line.strip()
@@ -38,11 +36,7 @@ def convert(filename):
                 "RotZ":float(ldata[8]),
                 "RotW":float(ldata[9]),
                 "LOD":int(ldata[10]),
-            }
-            
-            if entry["LOD"] != -1:
-                objlods.append(entry["LOD"])
-                
+            }                
             data[current].append(entry)
         elif current == "objs":
             entry = {
@@ -72,6 +66,8 @@ def convert(filename):
                 entry["DrawDistance"] = float(ldata[3])
                 entry["Flags"] = int(ldata[4])
                 
+            entry["isLOD"] = False
+            
             data[current].append(entry)
         elif current == "tobj":
             entry = {
@@ -106,8 +102,11 @@ def convert(filename):
         if len(data[k]) == 0:
             del data[k]
             
-    #print (objlods)
-    for inst in objlods:
-        data["inst"][inst]["isLOD"] = True
+    if "inst" in data:
+        for inst in data["inst"]:
+            if inst["LOD"] == -1:
+                continue
+            
+            data["inst"][inst["LOD"]]["isLOD"] = True
         
     return data
