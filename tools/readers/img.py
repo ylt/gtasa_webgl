@@ -1,5 +1,8 @@
 import struct
 import ctypes
+import io
+
+
 class img():
     def read_struct(self,format):
         size = struct.calcsize(format)
@@ -37,3 +40,10 @@ class img():
         self.f.seek(entry["Offset"]*2048)
         size = entry["Size_First"] if entry["Size_First"] != 0 else entry["Size_Second"]
         return self.f.read(size*2048)
+        
+    def getFileHandle(self, path, mode):
+        data = self.readFile(path)
+        if 'b' in mode:
+            return io.BytesIO(data)
+        else:
+            return io.StringIO(data)
