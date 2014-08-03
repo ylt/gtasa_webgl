@@ -1,5 +1,7 @@
+import gtapath as libgtapath
+
 import readers.ipl
-import readers.bipl
+import readers.ide
 import model
 import readers.txd
 
@@ -140,21 +142,24 @@ def do_dffs(dffs, in_models, dffpath, targetpath):
         f.close()
         
 #load in IDE's
-data = {}
+data = {"inst":[]}
 for ide in dat["IDE"]:
     filename = path_insensitive(gtapath+ide)
-    d = readers.ipl.convert(filename)
+    d = readers.ide.convert(filename)
     
     merge_dicts(data, d)
+
+libgta = libgtapath.gtapath(gtapath)
 
 #and the IPL's
 for ipl in dat["IPL"]:
     if 'paths' in ipl:
         continue
-    filename = path_insensitive(gtapath+ipl)
-    d = readers.ipl.convert(filename)
+    #filename = path_insensitive(gtapath+ipl)
+    d = readers.ipl.ipl(libgta, ipl)
     
-    merge_dicts(data, d)
+    data["inst"].extend(d.inst)
+    #merge_dicts(data, d)
 """
 for file in os.listdir(gtaimgpath):
     if file.endswith(".ipl"):
@@ -203,7 +208,7 @@ for inst in data["inst"]:
 #print(textures)
 #print(models)
 
-#do_txds(textures, gtaimgpath, target+"textures/")
+do_txds(textures, gtaimgpath, target+"textures/")
 do_dffs(models, in_models, gtaimgpath, target+"models/")
 
 
