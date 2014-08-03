@@ -58,7 +58,7 @@ function init()
 
 	container = document.getElementById('container');
 
-	camera = new THREE.PerspectiveCamera(fieldOfView, window.innerWidth/window.innerHeight, 0.1, drawDistance);
+	camera = new THREE.PerspectiveCamera(fieldOfView, window.innerWidth/window.innerHeight, 10, drawDistance);
 	camera.position.x = 2127;
 	camera.position.y = 2453;
 	camera.position.z = 10;
@@ -110,10 +110,12 @@ function init()
 		for (var i in data)
 		{
 			var item = data[i];
-			if (item.LOD == -1) {
+			console.log(item)
+			if (item["isLOD"] != true && item["Interior"] == 0 && item["LOD"] == -1) {
+				console.log(item)
 				var callback = (function(item){
 					return function(json){
-						obj = loader.parse(json)
+						
 						
 						/*mats = obj["materials"][0];
 						for (var i in mats) {
@@ -125,8 +127,16 @@ function init()
 						}*/
 						
 						var m = mloader.initMaterials(json.materials[0].materials, "./");
+						json.materials = [{"type":"MeshBasicMaterial"}];
+						obj = loader.parse(json)
 						for (mat_i in m) {
 							mat = m[mat_i]
+							
+							
+							if (item["ide"]["Flags"] & 12 > 0) {
+								mat.transparent = true
+							}
+							
 							map = mat.mat
 							if (map) {
 								map.wrapS = THREE.RepeatWrapping
@@ -149,15 +159,14 @@ function init()
 						
 						//obj.rotation.setFromQuaternion(new THREE.Quaternion(item.RotX, item.RotY, item.RotZ, item.RotW));
 						//obj.useQuaternion = true;
-						/*obj.quaternion.x = item.RotX;
+						obj.quaternion.x = item.RotX;
 						obj.quaternion.y = item.RotY;
 						obj.quaternion.z = item.RotZ;
-						obj.quaternion.w = item.RotW;*/
+						obj.quaternion.w = item.RotW;
 						
 						
 						obj.up = THREE.Vector3(0,0,1);
 						//console.log(item);
-						console.log(obj);
 					}
 				}
 				)(item);

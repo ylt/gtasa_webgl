@@ -88,7 +88,7 @@ gtapath = "/home/joe/win8vm-files/Grand Theft Auto San Andreas/"
 gtaimgpath = "/home/joe/win8vm-files/gta3/"
 target = "/home/joe/sineapps/gta/git/web/data/"
 dat = gta3_dat(gtapath+"data/gta.dat")
-overwrite = False #don't redo already done models
+overwrite = True #don't redo already done models
 
 filter_flags = ["NONE", "NEAREST", "LINEAR", "MIP_NEAREST", "MIP_LINEAR", "LINEAR_MIP_NEAREST", "LINEAR_MIP_LINEAR"]
 texture_wrap = ["NONE", "WRAP", "MIRROR", "CLAMP"]
@@ -96,19 +96,19 @@ texture_wrap = ["NONE", "WRAP", "MIRROR", "CLAMP"]
 def do_txds(txds, txdpath, targetpath):
     print("*** Processing %d TXD's ***" % len(txds))
     for txdfile in txds:
-        writepath = targetpath + txdfile + "/"
-        if os.path.exists(writepath):
-            if not overwrite:
-                continue
-        else:
-            os.makedirs(writepath)
+        #writepath = targetpath + txdfile + "/"
+        #if os.path.exists(writepath):
+        #    if not overwrite:
+        #        continue
+        #else:
+        #    os.makedirs(writepath)
         txd = readers.txd.file(txdpath+txdfile.lower()+".txd")
         
         flags = {}        
         
         for tex in txd.children:
             #tex.texture_name
-            tex.getImage().save(writepath+tex.texture_name.lower()+".png")
+            tex.getImage().save(targetpath+tex.texture_name.lower()+".png")
             flags[tex.texture_name] = {
                 "wrap_v":tex.texture_wrap_v,
                 "wrap_u":tex.texture_wrap_u,
@@ -118,9 +118,9 @@ def do_txds(txds, txdpath, targetpath):
                 "compression":tex.getCompression()
             }
         
-        f = open(writepath+"metadata.json", "w")
-        json.dump(flags, f)
-        f.close()
+        #f = open(writepath+"metadata.json", "w")
+        #json.dump(flags, f)
+        #f.close()
         
 def do_dffs(dffs, in_models, dffpath, targetpath):
     print("*** Processing %d DFF's ***" % len(dffs))
@@ -155,12 +155,12 @@ for ipl in dat["IPL"]:
     d = readers.ipl.convert(filename)
     
     merge_dicts(data, d)
-
+"""
 for file in os.listdir(gtaimgpath):
     if file.endswith(".ipl"):
         d = readers.bipl.read(gtaimgpath+file)
         merge_dicts(data, d)
-        
+"""     
 
 #merge in anim and tobj
 data["objs"].extend(data["tobj"])
@@ -203,7 +203,7 @@ for inst in data["inst"]:
 #print(textures)
 #print(models)
 
-do_txds(textures, gtaimgpath, target+"textures/")
+#do_txds(textures, gtaimgpath, target+"textures/")
 do_dffs(models, in_models, gtaimgpath, target+"models/")
 
 

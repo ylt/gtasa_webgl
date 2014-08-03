@@ -70,7 +70,7 @@ class convert():
         
         self.data["images"].append({
             "uuid":i_uuid,
-            "url":self.txdpath+texture.name+".png",
+            "url":"data/textures/"+texture.name+".png",
         })
     
     def build_material(self, m_uuid, mat, geometry):
@@ -97,7 +97,7 @@ class convert():
         if mat.texture:
             #t_uuid = str(uuid.uuid4())
             #self.build_texture(mat.texture, t_uuid)
-            material["mapDiffuse"] = self.txdpath+mat.texture.name+".png",
+            material["mapDiffuse"] = "data/textures/"+mat.texture.name+".png",
         
         self.data["materials"][0]["materials"].append(material)
         
