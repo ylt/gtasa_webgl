@@ -38,17 +38,19 @@ class gtapath():
                 
             if key not in out:
                 out[key] = []
-                
-            
-            # not all files are lowercase, but this will get the most hits
-            #val = val.replace("\\","/").lower()
             
             out[key].append(val)
         
         if "IMG" in out:
             for img in out["IMG"]:
                 self.loadImg(img)
-        
+
+    def hasFile(self, path):
+        for item in self.paths:
+            if item.hasFile(path):
+                return True
+        return False
+
     def getFileData(self, path, mode="r"):
         for item in self.paths:
             if item.hasFile(path):
@@ -59,7 +61,7 @@ class gtapath():
             if item.hasFile(path):
                 f = item.getFileHandle(path, mode)
                 return f
-
+        
     #used for IMG files, they're too big to read into memory
     # and you never get an IMG file within an IMG file
     def getFilePath(self, path):
@@ -105,4 +107,3 @@ class gtadir():
         f = open(fullpath, mode)
         return f
         
-g = gtapath("/home/joe/win8vm-files/Grand Theft Auto San Andreas/")
