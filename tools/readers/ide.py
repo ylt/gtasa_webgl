@@ -22,7 +22,7 @@ class ide():
         for line in f:
             line = line.strip()
         
-            if line[0] == "#" or line == "":
+            if line == "" or line[0] == "#":
                 continue
             elif current == None:
                 current = line
