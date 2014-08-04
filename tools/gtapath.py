@@ -9,6 +9,9 @@ class gtapath():
             gtadir(gtapath, ''),
         ]
         
+        self.ipls = ipls(self)
+        self.ides = ides(self)
+        
         self.loadImg("models/gta3.img")
         self.loadDat("data/gta.dat")
         self.loadDat("data/default.dat")
@@ -21,7 +24,6 @@ class gtapath():
         self.paths.append(img)
         
     def loadDat(self, path):
-        out = {}
         f = self.getFileHandle(path, "r")
         for line in f:
             line = line.strip()
@@ -36,14 +38,11 @@ class gtapath():
             if len(val) == 1:
                 val = val[0]
                 
-            if key not in out:
-                out[key] = []
+            if key not in self.dat:
+                self.dat[key] = []
             
-            out[key].append(val)
-        
-        if "IMG" in out:
-            for img in out["IMG"]:
-                self.loadImg(img)
+            if key == "IMG":
+                self.loadImg(val)
 
     def hasFile(self, path):
         for item in self.paths:
@@ -107,3 +106,10 @@ class gtadir():
         f = open(fullpath, mode)
         return f
         
+class ipls():
+    def __init__(self, gtapath):
+        self.gtapath = gtapath
+        
+class ides():
+    def __init__(self, gtapath):
+        self.gtapath = gtapath
