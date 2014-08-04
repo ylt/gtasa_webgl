@@ -1,4 +1,4 @@
-import readers.img 
+import readers
 import os
  
 class gtapath():
@@ -20,7 +20,7 @@ class gtapath():
         fullPath = self.getFilePath(path)
         if not fullPath:
             raise Exception("Missing IMG")
-        img = readers.img.img(fullPath)
+        img = readers.img(fullPath)
         self.paths.append(img)
         
     def loadDat(self, path):
@@ -37,13 +37,14 @@ class gtapath():
             del val[0]
             if len(val) == 1:
                 val = val[0]
-                
-            if key not in self.dat:
-                self.dat[key] = []
             
             if key == "IMG":
                 self.loadImg(val)
-
+            elif key == "IPL":
+                self.ipls.load(val)
+            elif key == "IDE":
+                self.ides.load(val)
+                
     def hasFile(self, path):
         for item in self.paths:
             if item.hasFile(path):
@@ -110,6 +111,14 @@ class ipls():
     def __init__(self, gtapath):
         self.gtapath = gtapath
         
+        self.ipls = []
+        
+    def load(self, filename):
+        self.ipls.append(readers.ipl(self.gtapath, filename))
+                
 class ides():
     def __init__(self, gtapath):
         self.gtapath = gtapath
+        self.ides = []
+    def load(self, filename):
+        self.ides.append(readers.ide(self.gtapath, filename))
