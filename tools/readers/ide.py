@@ -1,6 +1,5 @@
 class ide():
     def __init__(self, gtapath, filename):
-        #objs includes tobjs and anim
         self.objs = []
         self.tobj = []
         self.anim = []   
